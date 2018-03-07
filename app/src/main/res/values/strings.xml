@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MiniWeather</string>
+    <string name="title">天气预报</string>
 </resources>
