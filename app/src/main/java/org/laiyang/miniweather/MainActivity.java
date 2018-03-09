@@ -32,9 +32,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
         mUpdateBtn = (ImageView) findViewById(R.id.title_update_btn);
         mUpdateBtn.setOnClickListener(this);
 
-        if (Netutil.getNetworkState(this) != Netutil.NETWOEN_NONE) {
+        if (Netutil.getNetworkState(MainActivity.this) != Netutil.NETWOEN_NONE) {
             Log.d("myWeather", "网络连接ok");
-            Toast.makeText(this, "网络OK！", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "网络OJBK！", Toast.LENGTH_LONG).show();
         } else {
             Log.d("myWeather", "网络挂了");
             Toast.makeText(MainActivity.this, "网络挂了！", Toast.LENGTH_LONG).show();
@@ -57,6 +57,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
             }else{
                 Log.d("myWeather","网络挂了");
                 Toast.makeText(MainActivity.this,"网络挂了！",Toast.LENGTH_LONG).show();
+                sharedPreferences.edit();
             }
         }
     }
