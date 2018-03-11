@@ -28,9 +28,8 @@
             android:id="@+id/title_city_name"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:text="重庆天气"
             android:textColor="@color/white"
             android:textSize="18dp" />
@@ -122,6 +121,7 @@
                 android:layout_height="100dp" />-->
 
             <TextView
+                android:layout_marginLeft="15dp"
                 android:id="@+id/Notice_Pm2.5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -137,6 +137,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/Notice_Pm2.5"
                 android:gravity="right"
+                android:layout_marginLeft="15dp"
                 android:text="100"
                 android:textColor="@color/white"
                 android:textSize="50dp" />
@@ -176,7 +177,7 @@
                 android:layout_below="@+id/Notice_Date"
                 android:text="20C°~30C°"
                 android:textColor="@color/white"
-                android:textSize="35dp" />
+                android:textSize="20dp" />
 
             <TextView
                 android:id="@+id/Notice_Weather"
