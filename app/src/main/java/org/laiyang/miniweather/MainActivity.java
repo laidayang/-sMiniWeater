@@ -1,17 +1,21 @@
 package org.laiyang.miniweather;
 
-import android.annotation.SuppressLint;
+
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import org.laiyang.util.Netutil;
 import org.xmlpull.v1.XmlPullParser;
@@ -36,6 +40,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final int UPDATE_TODAY_WEATHER = 1;
 
     private ImageView mUpdateBtn;
+    private ImageView mcitySelect;
     private TextView cityTV, timeTV, humidityTV, WeekTV, pmDateTV, pmQualityTv, temperatureTv, climateTv, windTv, city_name_tv;
     private ImageView weatherImg, pmImg;
 
@@ -55,10 +60,31 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.weather_info);
+        /*SystemBarTintManager tintManager = new SystemBarTintManager(this);*/
+        SystemBarTintManager tintManager = new SystemBarTintManager(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            //透明状态栏
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            //透明导航栏
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            // 激活状态栏
+            tintManager.setStatusBarTintEnabled(true);
+            // enable navigation bar tint 激活导航栏
+            tintManager.setNavigationBarTintEnabled(true);
+            //设置系统栏设置颜色
+            //tintManager.setTintColor(R.color.red);
+            //给状态栏设置颜色
+            /*tintManager.setStatusBarTintResource(R.color.mask_tags_1);*/
+            //Apply the specified drawable or color resource to the system navigation bar.
+            //给导航栏设置资源
+          /*  tintManager.setNavigationBarTintResource(R.color.mask_tags_1);*/
+        }
 
         mUpdateBtn = findViewById(R.id.title_update_btn);
         mUpdateBtn.setOnClickListener(this);
 
+        mcitySelect = findViewById(R.id.title_city_manager);
+        mcitySelect.setOnClickListener(this);
         if (Netutil.getNetworkState(MainActivity.this) != Netutil.NETWOEN_NONE) {
             Log.d("myWeather", "网络连接ok");
             Toast.makeText(this, "网络OJBK！", Toast.LENGTH_LONG).show();
@@ -66,10 +92,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
             Log.d("myWeather", "网络挂了");
             Toast.makeText(MainActivity.this, "网络挂了！", Toast.LENGTH_LONG).show();
         }
+        View view = findViewById(R.id.title);
+        view.getBackground().setAlpha(0);
     }
-
     @Override
     public void onClick(View view) {
+
+        if (view.getId() == R.id.title_city_manager){
+            Intent i = new Intent(this,city_MainActivity.class);
+            startActivityForResult(i,1);}
+
         if (view.getId() == R.id.title_update_btn) {
             SharedPreferences sharedPreferences = getSharedPreferences("config", MODE_PRIVATE);
             String CityCode = sharedPreferences.getString("main_city", "101040100");
@@ -83,6 +115,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         }
         initView();
+    }
+
+    protected void onActivityResult(int requestCode,int resultCode,Intent date){
+        Log.d("myweather","<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        if(requestCode == 1 && resultCode == RESULT_OK){
+            String newCityCode = date.getStringExtra("cityCode");
+            Log.d("myWeather","选择的城市代码为>>>>>>>>>>>>>>>>>>>>>>>>>>>"+newCityCode);
+            if (Netutil.getNetworkState(this) != Netutil.NETWOEN_NONE){
+                Log.d("myWeather","网络OK");
+                queryWeatherCode(newCityCode);
+            }else {
+                Log.d("myWeather","网络挂了");
+                Toast.makeText(MainActivity.this,"网络挂了",Toast.LENGTH_LONG).show();
+
+        }
+    }
     }
 
     private void queryWeatherCode(String cityCode) {
@@ -161,7 +209,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 todayWeather.setUpdatetime(xmlPullParser.getText());
                             } else if (xmlPullParser.getName().equals("shidu")) {
                                 eventType = xmlPullParser.next();
-                                Log.d("shidu",xmlPullParser.getText());
+                                Log.d("shidu", xmlPullParser.getText());
                                 todayWeather.setShidu(xmlPullParser.getText());
                             } else if (xmlPullParser.getName().equals("wendu")) {
                                 eventType = xmlPullParser.next();
@@ -204,7 +252,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
                 eventType = xmlPullParser.next();
             }
-        } catch (XmlPullParserException |IOException e) {
+        } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
         }
         return todayWeather;
@@ -357,14 +405,62 @@ public class MainActivity extends Activity implements View.OnClickListener {
     void updateTodayWeather(TodayWeather todayWeather) {
         city_name_tv.setText(todayWeather.getCity() + "天气");
         cityTV.setText(todayWeather.getCity());
-        timeTV.setText("今日"+todayWeather.getupdatetime()+"更新");
-        humidityTV.setText(todayWeather.getShidu());
+        timeTV.setText("今日" + todayWeather.getupdatetime() + "更新");
+        humidityTV.setText("今日湿度=" + todayWeather.getShidu());
         WeekTV.setText(todayWeather.getDate());
         pmDateTV.setText(todayWeather.getPm25());
         pmQualityTv.setText(todayWeather.getQuality());
         temperatureTv.setText(todayWeather.getHigh() + "~" + todayWeather.getLow());
         climateTv.setText(todayWeather.getType());
         windTv.setText(todayWeather.getFengli() + todayWeather.getFengxiang());
+        switch (todayWeather.getQuality()){
+            case "良":
+                pmImg.setImageResource(R.drawable.biz_plugin_weather_101_150);
+                break;
+            case "优":
+                pmImg.setImageResource(R.drawable.biz_plugin_weather_51_100);
+                break;
+            case "轻度污染":
+                pmImg.setImageResource(R.drawable.biz_plugin_weather_151_200);
+                break;
+            case"中度污染":
+                pmImg.setImageResource(R.drawable.biz_plugin_weather_201_300);
+                break;
+            case"重度污染":
+                pmImg.setImageResource(R.drawable.biz_plugin_weather_greater_300);
+                break;
+        }
+
+        switch (todayWeather.getType()){
+            case"阴":weatherImg.setImageResource(R.drawable.biz_plugin_weather_yin);
+            break;
+            case"晴":weatherImg.setImageResource(R.drawable.biz_plugin_weather_qing);
+            break;
+            case"多云":weatherImg.setImageResource(R.drawable.biz_plugin_weather_duoyun);
+            break;
+            case"晴转多云":weatherImg.setImageResource(R.drawable.biz_plugin_weather_duoyun);
+            break;
+            case "雾":weatherImg.setImageResource(R.drawable.biz_plugin_weather_wu);
+            break;
+            case "小雨":weatherImg.setImageResource(R.drawable.biz_plugin_weather_xiaoyu);
+            break;
+            case "中雨":weatherImg.setImageResource(R.drawable.biz_plugin_weather_zhenyu);
+            break;
+            case"暴雨":weatherImg.setImageResource(R.drawable.biz_plugin_weather_baoyu);
+            break;
+            case "雷阵雨":weatherImg.setImageResource(R.drawable.biz_plugin_weather_leizhenyu);
+            break;
+            case "雨夹雪":weatherImg.setImageResource(R.drawable.biz_plugin_weather_yujiaxue);
+            break;
+            case "小雪":weatherImg.setImageResource(R.drawable.biz_plugin_weather_xiaoxue);
+            break;
+            case "中雪":weatherImg.setImageResource(R.drawable.biz_plugin_weather_zhongxue);
+            break;
+            case "大雪":weatherImg.setImageResource(R.drawable.biz_plugin_weather_daxue);
+            break;
+            case "冰雹":weatherImg.setImageResource(R.drawable.biz_plugin_weather_leizhenyubingbao);
+            break;
+        }
         Toast.makeText(MainActivity.this, "The update is successful", Toast.LENGTH_LONG).show();
     }
 }
